@@ -28,15 +28,21 @@ class Status(models.Model):
     u"""    
     Confronta i miei dati con quelli dell'istanza specificata e ritorna True se è None, 
     oppure se almeno uno dei campi è diverso (a parte stamp e webstamp), o se sono relativi ad un giorno diverso.
+    Se null'altro è cambiato, le coordinate vengono confrontate con un po' di tolleranza (circa 16 metri). 
     """
-    if not instance: return True                  #se istanza non specificata, è comunque diversa
-    if not instance.webstamp: return True         #se istanza senza webstamp, è comunque diversa
+    if not instance: return True                            #se istanza non specificata, è comunque diversa
     if self.address != instance.address: return True
     if self.fuel != instance.fuel: return True
     if self.inside != instance.inside: return True
     if self.outside != instance.outside: return True
-    if self.geom != instance.geom: return True
-    return self.webstamp.date() != date.today()
+    if not self.webstamp and instance.webstamp: return True         #differenza di presenza di webstamp      
+    if self.webstamp and not instance.webstamp: return True         #differenza di presenza di webstamp
+    #se entrambi i webstamp presenti e sono di giorni diversi, le istanze sono comunque diverse      
+    if self.webstamp and instance.webstamp and self.webstamp.date() != instance.webstamp.date(): return True
+    if not self.geom and instance.geom: return True         #differenza di presenza di geom      
+    if self.geom and not instance.geom: return True         #differenza di presenza di geom
+    #se entrambe geometrie presenti e "abbastanza" diverse, le istanze sono diverse, altrimenti no      
+    return self.geom and instance.geom and not self.geom.equals_exact(instance.geom, 0.000206558019572)
 
 #################################################
 class VehicleData(Status):
