@@ -1,0 +1,7 @@
+Django>=1.8
+psycopg2>=2.5.2
+djangorestframework>=3.2.3
+
+#Per la parte di retrieve dei dati attuali
+requests>=2.4.3
+pytz>=2014.7
