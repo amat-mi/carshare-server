@@ -6,5 +6,6 @@ db.*
 media/
 static/
 
-# PAOLO - Add secrets Python package
-secrets/
+# PAOLO - Add secrets Python package files (but not ".template" files)
+**/secrets/*.*
+!**/secrets/*.template
