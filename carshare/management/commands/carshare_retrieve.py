@@ -16,17 +16,24 @@ from carshare.serializers import PinfVehicleSerializer, \
 
 
 def do_it():
-  #carica in memoria gli id di tutti i veicoli attualmente conosciuti
-  vehicles =list(Vehicle.objects.all().values_list('pk',flat=True))
   with requests.Session() as session:
-    session.headers.update({'Authorization': 'Basic {}'.format(os.environ['DJANGO_CARSHARE_RETRIEVE_TOKEN'])})
+    token = os.environ.get('DJANGO_CARSHARE_RETRIEVE_TOKEN',None)
+    if token:
+      session.headers.update({'Authorization': 'Basic {}'.format(token)})
+      
     for agency in Agency.objects.all():
-      sys.stdout.write(u'Agency: {}\n'.format(agency))
-      try:        
+      sys.stdout.write(u'Agency: {}'.format(agency))
+      try:
+        retrieved = False         #per default dati dell'Agency corrente non recuperati        
+        #carica in memoria gli id di tutti i veicoli attualmente conosciuti per l'Agency corrente
+        vehicles =list(Vehicle.objects.filter(agency=agency).values_list('pk',flat=True))
         url = '{}?carAgency={}&type=car'.format(os.environ['DJANGO_CARSHARE_RETRIEVE_URL'],agency.id)
         content = session.get(url).text
         data = json.loads(content)
-        for item in data['features']:        #per ogni dato di singolo veicolo nell'array 'features'
+        features = data['features']
+        sys.stdout.write(u' => {} vehicles\n'.format(len(features)))
+        for item in features:        #per ogni dato di singolo veicolo nell'array 'features'
+          retrieved = True     #se almeno un veicolo disponibile, considero dati dell'Agency corrente recuperati         
           vehicle_serializer = PinfVehicleSerializer.create_from_pinf(item)
           if vehicle_serializer.is_valid():
             vehicle = vehicle_serializer.save()                                                
@@ -43,13 +50,16 @@ def do_it():
             sys.stderr.write(vehicle_serializer.errors + '\n')
       except Exception, exc:
         sys.stderr.write(str(exc) + '\n')
-        raise exc
-  #per tutti i veicoli conosciuti, per i quali non sono stati salvati dei dati, bisogna aggiungere dati vuoti,
-  #per tenere traccia del fatto che, in questo momento, sono noleggiati e quindi non disponibili
-  for pk in vehicles:    
-    data = VehicleData(vehicle=Vehicle.objects.get(pk=pk))
-    data.full_clean()
-    data.save()
+        #PAOLO 14/07/2017 - NOOO!!! Non rilanciamo l'eccezione, proviamo con la prossima Agency!!!
+        #raise exc
+      #per tutti i veicoli conosciuti, per i quali non sono stati salvati dei dati, bisogna aggiungere dati vuoti,
+      #per tenere traccia del fatto che, in questo momento, sono noleggiati e quindi non disponibili
+      #Ma solo se dati per l'Agency corrente effettivamente recuperati
+      if retrieved:
+        for pk in vehicles:    
+          data = VehicleData(vehicle=Vehicle.objects.get(pk=pk))
+          data.full_clean()
+          data.save()
   
 class Command(NoArgsCommand):
   help = u'Recupera la situazione attuale del CarSharing e la memorizza'
