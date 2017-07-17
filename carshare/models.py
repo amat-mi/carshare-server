@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from datetime import date
+from datetime import datetime
 
 from django.contrib.gis.db import models as geomodels
 from django.core.exceptions import ObjectDoesNotExist
@@ -140,3 +140,27 @@ class Vehicle(models.Model):
     self.status = status
     self.full_clean()
     self.save()    
+
+#################################################
+class Authorization(models.Model):
+  plate = models.CharField(max_length=20, null=False, unique=True)
+  agency = models.ForeignKey('Agency', related_name='authorizations', null=False, on_delete=models.CASCADE)
+  fromstamp = models.DateField(null=True,blank=True)
+  tostamp = models.DateField(null=True,blank=True)
+  
+  def __unicode__(self):
+    return u'{} (active: {})'.format(self.plate,self.is_active)  
+  
+  class Meta:
+    verbose_name = "Autorizzazione"
+    verbose_name_plural = "Autorizzazioni"
+    ordering = ['plate']
+
+  def date_check(self,date=None):
+    date = (date or datetime.now()).date()
+    return -1 if self.fromstamp and date < self.fromstamp else 1 if self.tostamp and date > self.tostamp else 0
+  
+  @property
+  def is_active(self):
+    return self.date_check() == 0
+  
