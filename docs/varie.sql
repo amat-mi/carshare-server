@@ -1,3 +1,66 @@
+/**
+	Crea VIEW per avere tutte le autorizzazioni CAR2GO, sia 2013, sia 2016
+*/
+
+CREATE OR REPLACE VIEW "CAR2GO_tElencoTarghe" as 
+select
+t13."Targa" as plate,
+'2013-01-01'::date as fromstamp,
+t13."Scadenza" as tostamp,
+4 as agency_id
+from "CAR2GO_tElencoTarghe_2013" t13
+left join "CAR2GO_tElencoTarghe_2016" t16 using ("Targa")
+where t16."Targa" is null
+UNION
+select
+t16."Targa" as plate,
+t16."Decorrenza" as fromstamp,
+t16."Scadenza" as tostamp,
+4 as agency_id
+from "CAR2GO_tElencoTarghe_2013" t13
+right join "CAR2GO_tElencoTarghe_2016" t16 using ("Targa")
+where t13."Targa" is null
+UNION
+select
+t13."Targa" as plate,
+coalesce(t16."Decorrenza",'2013-01-01'::date) as fromstamp,
+t16."Scadenza" as tostamp,
+4 as agency_id
+from "CAR2GO_tElencoTarghe_2013" t13
+join "CAR2GO_tElencoTarghe_2016" t16 using ("Targa");
+
+
+/**
+	Crea VIEW per avere tutte le autorizzazioni ENI, sia 2013, sia 2016
+*/
+
+CREATE OR REPLACE VIEW "ENI_tElencoTarghe" as 
+select
+t13."Targa" as plate,
+'2013-01-01'::date as fromstamp,
+t13."Scadenza" as tostamp,
+2 as agency_id
+from "ENI_tElencoTarghe_2013" t13
+left join "ENI_tElencoTarghe_2016" t16 using ("Targa")
+where t16."Targa" is null
+UNION
+select
+t16."Targa" as plate,
+t16."Decorrenza" as fromstamp,
+t16."Scadenza" as tostamp,
+2 as agency_id
+from "ENI_tElencoTarghe_2013" t13
+right join "ENI_tElencoTarghe_2016" t16 using ("Targa")
+where t13."Targa" is null
+UNION
+select
+t13."Targa" as plate,
+coalesce(t16."Decorrenza",'2013-01-01'::date) as fromstamp,
+t16."Scadenza" as tostamp,
+2 as agency_id
+from "ENI_tElencoTarghe_2013" t13
+join "ENI_tElencoTarghe_2016" t16 using ("Targa");
+
 
 /**
 	Seleziona i dati di tutti i veicoli per i quali ci sono almeno 5 dati,
