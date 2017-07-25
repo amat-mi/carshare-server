@@ -1,4 +1,92 @@
 /**
+	Seleziona tutti i veicoli che sono stati disponibili al noleggio almeno una volta,
+	ma che non hanno autorizzazioni (sono quasi soltanto gli scooter).
+	ATTENZIONE!!! In realtà anche gli scooter risultano come "kind"='car'!!!
+*/
+
+select
+v.*,
+a.fromstamp,
+a.tostamp,
+null as webstamp,
+null as daysdiff
+from carshare_authorization a
+right join carshare_vehicle v using(plate)
+where a.plate is null
+order by v.agency_id,v.plate;
+
+
+/**
+	Seleziona tutti i veicoli che ma che non hanno autorizzazioni, 
+	ma che non sono stati disponibili al noleggio nemmeno una volta.
+*/
+
+select
+null as id,
+a.plate,
+null as design,
+null as engine,
+null as kind,
+a.agency_id,
+a.fromstamp,
+a.tostamp,
+null as webstamp,
+null as daysdiff
+from carshare_authorization a
+left join carshare_vehicle v using(plate)
+where v.plate is null
+order by a.agency_id,a.plate;
+
+
+/**
+	Seleziona i veicoli che sono stati disponibili al noleggio
+	in una data antecedente all'inizio della loro autorizzazione
+	(non è troppo lenta, circa 50 secondi per 4 record trovati)
+*/
+
+select
+v.*,
+a.fromstamp,
+a.tostamp,
+d.webstamp,
+d.webstamp::date-a.fromstamp as daysdiff
+from (
+select
+d.vehicle_id,
+min(d.webstamp) as webstamp
+from carshare_vehicledata d
+group by d.vehicle_id) d
+join carshare_vehicle v on v.id=d.vehicle_id
+join carshare_authorization a on a.plate=v.plate
+where d.webstamp::date < a.fromstamp
+order by a.agency_id,a.plate;
+
+
+/**
+	Seleziona i veicoli che sono stati disponibili al noleggio
+	in una data successiva alla fine della loro autorizzazione
+	(non è troppo lenta, circa 50 secondi per 23 record trovati)
+*/
+
+select
+v.*,
+a.fromstamp,
+a.tostamp,
+d.webstamp,
+d.webstamp::date-a.tostamp as daysdiff
+from (
+select
+d.vehicle_id,
+max(d.webstamp) as webstamp
+from carshare_vehicledata d
+group by d.vehicle_id) d
+join carshare_vehicle v on v.id=d.vehicle_id
+join carshare_authorization a on a.plate=v.plate
+where d.webstamp::date > a.tostamp
+order by a.agency_id,a.plate;
+
+
+/**
 	Crea VIEW per avere tutte le autorizzazioni CAR2GO, sia 2013, sia 2016
 */
 
@@ -23,7 +111,7 @@ where t13."Targa" is null
 UNION
 select
 t13."Targa" as plate,
-coalesce(t16."Decorrenza",'2013-01-01'::date) as fromstamp,
+'2013-01-01' as fromstamp,
 t16."Scadenza" as tostamp,
 4 as agency_id
 from "CAR2GO_tElencoTarghe_2013" t13
@@ -37,7 +125,7 @@ join "CAR2GO_tElencoTarghe_2016" t16 using ("Targa");
 CREATE OR REPLACE VIEW "ENI_tElencoTarghe" as 
 select
 t13."Targa" as plate,
-'2013-01-01'::date as fromstamp,
+t13."DecorrenzaPass" as fromstamp,
 t13."Scadenza" as tostamp,
 2 as agency_id
 from "ENI_tElencoTarghe_2013" t13
@@ -55,13 +143,40 @@ where t13."Targa" is null
 UNION
 select
 t13."Targa" as plate,
-coalesce(t16."Decorrenza",'2013-01-01'::date) as fromstamp,
+coalesce(t13."DecorrenzaPass",'2013-01-01'::date) as fromstamp,
 t16."Scadenza" as tostamp,
 2 as agency_id
 from "ENI_tElencoTarghe_2013" t13
 join "ENI_tElencoTarghe_2016" t16 using ("Targa");
 
 
+/**
+	Aggiorna la tabella finale delle autorizzazioni impostando il campo "tostamp"
+	in base al cambio targa, ove non già impostato (per i veicoli Car2Go)
+*/
+
+UPDATE carshare_authorization
+set tostamp=(select t16."Decorrenza"
+	from "CAR2GO_tElencoTarghe_2013" t13
+	join "CAR2GO_tElencoTarghe_2016" t16 on t16."Targa"=replace("CambioTarga",'Sostituita da ','')
+	where t13."Targa"=carshare_authorization.plate)
+where tostamp is null;
+
+
+/**
+	Aggiorna la tabella finale delle autorizzazioni impostando il campo "tostamp"
+	in base al cambio targa, ove non già impostato (per i veicoli ENI)
+*/
+
+UPDATE carshare_authorization
+set tostamp=(select t16."Decorrenza"
+	from "ENI_tElencoTarghe_2013" t13
+	join "ENI_tElencoTarghe_2016" t16 on t16."Targa"=replace("CambioTarga",'Sostituita da ','')
+	where t13."Targa"=carshare_authorization.plate)
+where tostamp is null;
+
+
+---------------------------------------------------------
 /**
 	Seleziona i dati di tutti i veicoli per i quali ci sono almeno 5 dati,
 	ovvero quelli che sono stati noleggiati e rilasciati più volte.
