@@ -3,7 +3,7 @@
 from django.conf.urls import patterns, url, include
 from rest_framework.routers import SimpleRouter
 
-from views import VehicleViewSet, VehicleDataViewSet
+from .views import VehicleViewSet, VehicleDataViewSet
 
 
 router = SimpleRouter()

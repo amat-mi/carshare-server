@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
-from models import Vehicle, VehicleData
-from serializers import VehicleSerializer, VehicleDataSerializer
+from .models import Vehicle, VehicleData
+from .serializers import VehicleSerializer, VehicleDataSerializer
 
 
 #################################################

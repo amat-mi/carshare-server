@@ -6,7 +6,7 @@ from django.contrib.gis.geos.geometry import GEOSGeometry
 import pytz
 from rest_framework import serializers
 
-from models import Vehicle, VehicleStatus, VehicleData
+from .models import Vehicle, VehicleStatus, VehicleData
 
 
 #################################################

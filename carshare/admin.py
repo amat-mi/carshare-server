@@ -2,8 +2,7 @@
 
 from django.contrib import admin
 
-from models import Agency, Vehicle
-from carshare.models import Authorization
+from .models import Agency, Vehicle, Authorization
 
 
 #################################################
