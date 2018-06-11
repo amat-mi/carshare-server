@@ -54,6 +54,6 @@ class VehicleDataViewSet(viewsets.ReadOnlyModelViewSet):
 #               return build_message_response('OK')
 #           else:
 #               return build_error_response(serializer.errors)
-#       except Exception, exc:
+#       except Exception as exc:
 #           return build_exception_response()
 #          

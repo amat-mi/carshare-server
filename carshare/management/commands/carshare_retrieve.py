@@ -48,7 +48,7 @@ def do_it():
               sys.stderr.write(data_serializer.errors + '\n')
           else:
             sys.stderr.write(vehicle_serializer.errors + '\n')
-      except Exception, exc:
+      except Exception as exc:
         sys.stderr.write(str(exc) + '\n')
         #PAOLO 14/07/2017 - NOOO!!! Non rilanciamo l'eccezione, proviamo con la prossima Agency!!!
         #raise exc
@@ -77,7 +77,7 @@ class Command(BaseCommand):
       do_it()
 #       transaction.commit()
       self.printline('Fine')
-    except Exception, exc:
+    except Exception as exc:
 #       transaction.rollback()
       raise CommandError(self.help + "\n" + str(exc))
 #     finally:
