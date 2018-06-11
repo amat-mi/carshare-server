@@ -52,6 +52,13 @@ Attivare il virtualenv ed installare i requirements:
     pip install -r requirements.txt
     deactivate
 
+Copiare lo script di esecuzione del command e impostare gli opportuni diritti:
+
+    cp /var/www/django/projects/carshare-server/docs/carshare_retrieve.sh /var/www/django/
+    chmod ug+x /var/www/django/carshare_retrieve.sh
+
+__ATTENZIONE!!! Modificare lo script come opportuno!!!__
+
 Eseguire da cron ogni tot minuti, per esempio:
 
     crontab -e
