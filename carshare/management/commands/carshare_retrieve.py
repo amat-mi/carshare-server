@@ -68,7 +68,7 @@ class Command(BaseCommand):
     self.stdout.write(u'{}: {}\n'.format(msg,self.help))
     
   @transaction.atomic
-  def handle_noargs(self, **options):
+  def handle(self, *args, **options):
     self.printline('Inizio')
 #     transaction.commit_unless_managed()
 #     transaction.enter_transaction_management()
