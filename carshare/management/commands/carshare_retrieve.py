@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
-import json
 import os
 import re
 import sys
@@ -28,8 +27,7 @@ def do_it():
         #carica in memoria gli id di tutti i veicoli attualmente conosciuti per l'Agency corrente
         vehicles =list(Vehicle.objects.filter(agency=agency).values_list('pk',flat=True))
         url = '{}?carAgency={}&type=car'.format(os.environ['DJANGO_CARSHARE_RETRIEVE_URL'],agency.id)
-        content = session.get(url).text
-        data = json.loads(content)
+        data = session.get(url).json()
         features = data['features']
         sys.stdout.write(u' => {} vehicles\n'.format(len(features)))
         for item in features:        #per ogni dato di singolo veicolo nell'array 'features'
