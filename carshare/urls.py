@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from django.conf.urls import patterns, url, include
+from django.urls import re_path as url, include
 from rest_framework.routers import SimpleRouter
 
 from .views import VehicleViewSet, VehicleDataViewSet
@@ -14,6 +14,7 @@ router.register(r'vehicledata', VehicleDataViewSet)
 
 
 ##### Aggiunta degli url ####################################
-urlpatterns =  patterns('',
+app_name = 'carshare'
+urlpatterns =  [
     url(r'^', include(router.urls)),    
-)
+]

@@ -1,15 +1,16 @@
 # coding: utf-8
 
 from django.conf import settings
-from django.conf.urls import patterns, url, include, static
+from django.urls import re_path as url, include
+from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
 
 
-urlpatterns = patterns('',
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^rtcarshare/', include('carshare.urls')),
-)
+urlpatterns = [
+    url(r'^admin/', admin.site.urls),
+    url(r'^rtcarshare/', include('carshare.urls', namespace='carshare')),
+]
 
 # urlpatterns = format_suffix_patterns(urlpatterns)
 # 
