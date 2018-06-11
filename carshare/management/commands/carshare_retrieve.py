@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 import requests
 
@@ -61,7 +61,7 @@ def do_it():
           data.full_clean()
           data.save()
   
-class Command(NoArgsCommand):
+class Command(BaseCommand):
   help = u'Recupera la situazione attuale del CarSharing e la memorizza'
   
   def printline(self,msg):
