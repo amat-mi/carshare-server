@@ -18,7 +18,6 @@ class Status(models.Model):
   stamp = models.DateTimeField(null=False, auto_now_add=True)
   webstamp = models.DateTimeField(null=True,blank=True)
   geom = geomodels.PointField(srid=4326, null=True, blank=True)
-  objects = geomodels.GeoManager() # so we can use spatial queryset methods
 
   class Meta:
     ordering = ['stamp']
